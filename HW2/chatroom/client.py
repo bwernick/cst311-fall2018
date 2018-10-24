@@ -2,39 +2,29 @@
 #Alex
 #TCP Client
 
-from socket import *
+import socket
 import sys
 import select
 
-#server variables
-serverName = 'localhost'
-serverPort = 12000
+server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-#setup connection
-clientSocket = socket(AF_INET, SOCK_STREAM)
-clientSocket.connect((serverName, serverPort))
+server.connect(('localhost', 12000))
 
-# message sending/ receiving loop
 while True:
-    # input streams
-    sockets = [sys.stdin,clientSocket]
 
-    # select gives input for reading input
-    socket_read = select.select(sockets)
+    # maintains a list of possible input streams
+    sockets = [sys.stdin, server]
 
-    for sock in socket_read:
-        # if server has a message
-        if sock == clientSocket:
-            msg = sock.recv(1024)
-            # print the server message
-            print msg
+    read_sockets, wrSocket, erSocket = select.select(sockets, [], []) #getting the sockets with select
+
+    for s in read_sockets:
+        if s == server: # if connection from server socket
+            message = s.recv(2048) # recieve its message
+            print message #print the message
         else:
-            # if user inputs
-            msg = sys.stdin.readline()
-            #send the user input to server
-            clientSocket.send(msg)
-            print("<You>")
-            print(msg)
-
-clientSocket.close()
-
+            message = sys.stdin.readline() # errors out if using input/raw_input
+            server.send(message) # send message
+            sys.stdout.write("<You>") # print seems to hate message
+            sys.stdout.write(message) # so stdout is used instead
+            sys.stdout.flush() #flush stdout
+server.close()

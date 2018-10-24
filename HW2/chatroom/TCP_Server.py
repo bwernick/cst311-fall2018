@@ -2,64 +2,63 @@
 # Alex
 # TCP Server
 
-# TCPCapitalizationServer.py
-from socket import *
+# TCP Server.py
+import socket
 import thread
 
-client_list = []
-serverPort = 12000          # reserving a port
+server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
-# Create a TCP socket
-serverSocket = socket(AF_INET, SOCK_STREAM)
+server.bind(('localhost',12000))
 
-# Assign IP address and port number to socket
-serverSocket.bind(('', serverPort))
+server.listen(100)
+clients = []
 
-# server is listening for packets
-serverSocket.listen(100)
+print("Waiting for connections...")
 
-print ('The server is ready to receive')
-print ('Waiting for clients...')
+def clientThread(conn, addr):
+    # Connection message
+    conn.send("Connected!")
+    # loop forever to handle any messages from client
+    while True:
+        try:
+            message = conn.recv(2048)
+            if message:
+                print "<" + addr[0] + "> " + message
 
-# sending messages
-def broadcast(msg, conn):
-    for client in client_list:
-        # if not the sending client
-        if client != conn:
+                # Send message to all
+                sendMsg = "<" + addr[0] + "> " + message
+                broadcast(sendMsg, conn)
+            else:
+                remove(conn)
+        except:
+            continue
+
+def broadcast(message, connection):
+    for client in clients:
+        if client != connection:
             try:
-                # send the message to other clients
-                client.send(msg)
+                client.send(message)
             except:
-                # no connection clients get removed
                 client.close()
+                # remove the client
                 remove(client)
 
-# removing specific clients
-def remove(conn):
-    if conn in client_list:
-        client_list.remove(conn)
+def remove(connection):
+    if connection in clients:
+        clients.remove(connection)
 
-
-def on_new_client(clientsocket,addr):
-    while True:
-        # get message
-        msg = clientsocket.recv(1024)
-        # print message server side
-        print "<", addr, ">", ': ', msg
-        # generate messsage to send
-        sendMsg = "<" + addr + ">" + ': ' + msg
-        # send to all other clients
-        broadcast(sendMsg, clientsocket)
-    clientsocket.close()
 
 while True:
-    # get connection from client
-    c, addr = serverSocket.accept()
-    # add new client to list of clients
-    client_list.append(c)
-    # connected message
-    print addr, " connected."
-    # new thread for each new client
-    thread.start_new_thread(on_new_client(c,addr))
+    conn, addr = server.accept()
+    clients.append(conn)
 
-serverSocket.close()
+    # prints the address of the user that just connected
+    print addr[0] + " connected."
+
+    # creates and individual thread for every user
+    # that connects
+    thread.start_new_thread(clientThread, (conn, addr))
+
+conn.close()
+server.close()
