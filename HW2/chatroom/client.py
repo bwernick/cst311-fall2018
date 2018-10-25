@@ -21,10 +21,19 @@ while True:
         if s == server: # if connection from server socket
             message = s.recv(2048) # recieve its message
             print message #print the message
+            if "Disconnected!" in message:
+                if "> Disconnected!" in message:
+                    continue
+                else:
+                    break
+
         else:
             message = sys.stdin.readline() # errors out if using input/raw_input
             server.send(message) # send message
             sys.stdout.write("<You>") # print seems to hate message
             sys.stdout.write(message) # so stdout is used instead
             sys.stdout.flush() #flush stdout
+    else:
+        continue
+    break
 server.close()
