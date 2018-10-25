@@ -25,7 +25,7 @@ def clientThread(conn, addr):
             message = conn.recv(2048)
             if message:
                 print "<" + addr[0] + "> " + message
-
+		print addr[1]
                 # Send message to all
                 sendMsg = "<" + addr[0] + "> " + message
                 broadcast(sendMsg, conn)
