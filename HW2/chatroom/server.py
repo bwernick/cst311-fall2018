@@ -24,16 +24,16 @@ def clientThread(conn, addr):
         try:
             message = conn.recv(2048)
             if message:
-                print "<" + addr[0] + "> " + message
-		print addr[1]
+                print "<" + addr[0] + ", " + addr[1] + "> " + message
+
                 # Send message to all
-                sendMsg = "<" + addr[0] + "> " + message
+                sendMsg = "<" + addr[0] + ", " + addr[1] + "> " + message
                 broadcast(sendMsg, conn)
             else:
                 remove(conn)
             if "bye" in message.lower(): # if bye is in the message
                 conn.send("Disconnected!")  # tell the client they have been disconnected
-                print addr[0] + " disconnected."
+                print addr[0] + ", " + addr[1] + "disconnected."
                 remove(conn)    # remove the client from
         except:
             continue
