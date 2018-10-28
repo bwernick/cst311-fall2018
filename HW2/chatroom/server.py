@@ -18,22 +18,22 @@ print("Waiting for connections...")
 
 def clientThread(conn, addr):
     # Connection message
-    conn.send("Connected!")
+    conn.send("Connected!\n")
     # loop forever to handle any messages from client
     while True:
         try:
             message = conn.recv(2048)
             if message:
-                print "<" + addr[0] + ", " + addr[1] + "> " + message
+                print "<" + addr[0] + ", " + str(addr[1]) + "> " + message
 
                 # Send message to all
-                sendMsg = "<" + addr[0] + ", " + addr[1] + "> " + message
+                sendMsg = "<" + addr[0] + ", " + str(addr[1]) + "> " + message
                 broadcast(sendMsg, conn)
             else:
                 remove(conn)
             if "bye" in message.lower(): # if bye is in the message
-                conn.send("Disconnected!")  # tell the client they have been disconnected
-                print addr[0] + ", " + addr[1] + "disconnected."
+                conn.send("Disconnected!\n")  # tell the client they have been disconnected
+                print "<" + addr[0] + ", " + str(addr[1]) + ">" + " disconnected."
                 remove(conn)    # remove the client from
         except:
             continue
@@ -58,7 +58,7 @@ while True:
     clients.append(conn)
 
     # prints the address of the user that just connected
-    print addr[0] + " connected."
+    print "<" + addr[0] + ", " + str(addr[1]) + "> connected."
 
     # creates and individual thread for every user
     # that connects
